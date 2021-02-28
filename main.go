@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/shopspring/decimal"
 )
 
@@ -133,6 +134,8 @@ func init() {
 	if err != nil {
 		log.Fatalf("init.setupSetting err: %v", err)
 	}
+
+	setupHTTPClient()
 }
 
 func main() {
@@ -146,7 +149,9 @@ func main() {
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
 
-	gridTradeRun(0.02)
+	// gridTradeRun(0.02)
+
+	fmt.Println(readUSDTBalance())
 }
 
 func setupSetting() error {
@@ -160,4 +165,11 @@ func setupSetting() error {
 	}
 
 	return nil
+}
+
+func setupHTTPClient() {
+	global.HTTPClient = resty.New().
+		SetHeader("Content-Type", "application/json").
+		SetHostURL(global.BigOneSetting.BASEAPI).
+		SetTimeout(2 * time.Second)
 }

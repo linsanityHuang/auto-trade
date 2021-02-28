@@ -5,15 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/go-resty/resty/v2"
 )
-
-var httpClient = resty.New().
-	SetHeader("Content-Type", "application/json").
-	SetHostURL(global.BigOneSetting.BASEAPI).
-	SetTimeout(2 * time.Second)
 
 // HTTPError HTTPError
 type HTTPError struct {
@@ -27,7 +21,7 @@ func (err *HTTPError) Error() string {
 
 // HTTPRequest HTTPRequest
 func HTTPRequest(ctx context.Context) *resty.Request {
-	return httpClient.R().SetContext(ctx)
+	return global.HTTPClient.R().SetContext(ctx)
 }
 
 func decodeResponse(resp *resty.Response) ([]byte, error) {
