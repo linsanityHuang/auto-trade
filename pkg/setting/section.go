@@ -7,6 +7,15 @@ type BigOne struct {
 	APISECRET string
 }
 
+// Email Email配置
+type Email struct {
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+	Receiver     string
+}
+
 // ReadSection read section
 func (s *Setting) ReadSection(k string, v interface{}) error {
 	err := s.vp.UnmarshalKey(k, v)

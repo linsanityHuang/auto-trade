@@ -3,6 +3,7 @@ package bigone
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // Trade 已成交的交易订单
@@ -23,7 +24,9 @@ type Trade struct {
 // ReadTrades Trades of a asset pair, Only returns 50 latest trades
 func ReadTrades(assetPairName string) ([]*Trade, error) {
 
-	resp, err := HTTPRequest(context.Background()).Get(fmt.Sprintf("/asset_pairs/%v/trades", assetPairName))
+	path := fmt.Sprintf("/asset_pairs/%v/trades", strings.ToUpper(assetPairName))
+
+	resp, err := HTTPRequest(context.Background()).Get(path)
 
 	if err != nil {
 		return nil, err
@@ -39,6 +42,7 @@ func ReadTrades(assetPairName string) ([]*Trade, error) {
 }
 
 // ReadUserTrades Trades of user
+// Deleted
 func ReadUserTrades(assetPairName string) ([]*Trade, error) {
 
 	resp, err := HTTPRequest(context.Background()).SetQueryParam("asset_pair_name", assetPairName).Get("/viewer/trades")

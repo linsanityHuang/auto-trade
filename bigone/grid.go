@@ -18,15 +18,14 @@ func CreateGridOrder(p0, width, totalUSDT float32, orderNums int) (buyOrders []*
 	startPrice := p0
 
 	for i := 0; i < orderNums; i++ {
-
-		startPrice *= (1 - width)
-
 		buyOrders = append(buyOrders, &Order{
 			AssetPairName: "BTC-USDT",
 			Price:         decimal.NewFromFloat32(startPrice).String(),
-			Side:          "BID",
-			Type:          "LIMIT",
+			Side:          BID.String(),
+			Type:          LIMIT.String(),
 		})
+
+		startPrice *= (1 - width)
 	}
 
 	for _, bOrder := range buyOrders {

@@ -1,14 +1,16 @@
 
+<!-- bigone 交易所API文档 -->
 https://open.bigonechina.com/docs/api.html
 
 https://github.com/iam9k/bigone-sdk-go
 
 https://github.com/go-resty/resty/
 
-go build -o auto-trade ./main.go
 
-<!-- nohup ./auto-trade & -->
+rm -rf one log.txt
 
-./auto-trade &
+go build -o one ./main.go
 
-ps -ef | grep auto-trade
+./one trade -priceSpace=0.01 -orderNum=0 &
+
+ps -ef | grep one

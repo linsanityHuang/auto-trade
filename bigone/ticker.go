@@ -3,6 +3,7 @@ package bigone
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // PriceLevel PriceLevel
@@ -12,7 +13,7 @@ type PriceLevel struct {
 	OrderCount int    `json:"order_count,omitempty"`
 }
 
-// Ticker Ticker
+// Ticker 是一个资产对的当前状态，有24小时的交易数据
 type Ticker struct {
 	AssetPairName string     `json:"asset_pair_name,omitempty"`
 	Bid           PriceLevel `json:"bid,omitempty"`
@@ -25,10 +26,12 @@ type Ticker struct {
 	DailyChange   string     `json:"daily_change,omitempty"`
 }
 
-// ReadTicker ReadTicker
+// ReadTicker Ticker of one asset pair
 func ReadTicker(assetPairName string) (*Ticker, error) {
 
-	resp, err := HTTPRequest(context.Background()).Get(fmt.Sprintf("/asset_pairs/%v/ticker", assetPairName))
+	path := fmt.Sprintf("/asset_pairs/%v/ticker", strings.ToUpper(assetPairName))
+
+	resp, err := HTTPRequest(context.Background()).Get(path)
 	if err != nil {
 		return nil, err
 	}
@@ -42,10 +45,14 @@ func ReadTicker(assetPairName string) (*Ticker, error) {
 	return ticker, nil
 }
 
-// ReadTickers ReadTickers
-func ReadTickers(assetPairName string) ([]*Ticker, error) {
+// ReadTickers Ticker of multiple asset pairs
+func ReadTickers(pairNames []string) ([]*Ticker, error) {
+	// pairNames BTC-USDT,PCX-BTC,GXC-USDT
+	strings.Join(pairNames, ",")
 
-	resp, err := HTTPRequest(context.Background()).Get(fmt.Sprintf("/asset_pairs/tickers?pair_names=%s", assetPairName))
+	path := fmt.Sprintf("/asset_pairs/tickers?pair_names=%s", strings.Join(pairNames, ","))
+
+	resp, err := HTTPRequest(context.Background()).Get(path)
 
 	if err != nil {
 		return nil, err
@@ -58,4 +65,15 @@ func ReadTickers(assetPairName string) ([]*Ticker, error) {
 	}
 
 	return tickers, nil
+}
+
+func ShowAssetPrice(assetPair string) {
+	pair := strings.ToUpper(assetPair)
+	// 获取交易对当前价格
+	ticker, err := ReadTicker(pair)
+	if err != nil {
+		fmt.Printf("read ticker err: %v\n", err)
+	}
+
+	fmt.Printf("当前 %s 交易对的价格为 %s\n", pair, ticker.Ask.Price)
 }

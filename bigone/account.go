@@ -1,9 +1,12 @@
 package bigone
 
 import (
-	"auto-trade/global"
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 // SpotAccount represents the state of one spot account.
@@ -32,15 +35,8 @@ func ReadSpotAccounts() ([]*SpotAccount, error) {
 
 // ReadSpotAccount Balance of one asset
 func ReadSpotAccount(assetSymbol string) (*SpotAccount, error) {
-
-	token, err := SignAuthenticationToken(global.BigOneSetting.APIKEY, global.BigOneSetting.APISECRET)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := HTTPRequest(context.Background()).
-		SetAuthToken(token).
-		Get(fmt.Sprintf("/viewer/accounts/%v", assetSymbol))
+	path := fmt.Sprintf("/viewer/accounts/%v", strings.ToUpper(assetSymbol))
+	resp, err := HTTPRequest(context.Background()).Get(path)
 
 	if err != nil {
 		return nil, err
@@ -81,8 +77,8 @@ func ReadFundAccounts() ([]*FundAccount, error) {
 
 // ReadFundAccount Balance of one asset
 func ReadFundAccount(assetSymbol string) (*FundAccount, error) {
-
-	resp, err := HTTPRequest(context.Background()).Get(fmt.Sprintf("/viewer/fund/accounts/%v", assetSymbol))
+	path := fmt.Sprintf("/viewer/fund/accounts/%v", strings.ToUpper(assetSymbol))
+	resp, err := HTTPRequest(context.Background()).Get(path)
 
 	if err != nil {
 		return nil, err
@@ -95,4 +91,20 @@ func ReadFundAccount(assetSymbol string) (*FundAccount, error) {
 	}
 
 	return account, nil
+}
+
+func SpotBalance(asset string) float32 {
+	spotAccount, err := ReadSpotAccount(strings.ToUpper(asset))
+	if err != nil {
+		log.Fatalf("read spot account err: %v\n", err)
+	}
+
+	balance, err := decimal.NewFromString(spotAccount.Balance)
+	if err != nil {
+		log.Fatalf("balance to decimal err: %v\n", err)
+	}
+
+	b, _ := balance.BigFloat().Float32()
+
+	return b
 }
