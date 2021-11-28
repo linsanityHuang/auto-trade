@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -21,7 +22,12 @@ func (err *HTTPError) Error() string {
 
 // HTTPRequest HTTPRequest
 func HTTPRequest(ctx context.Context) *resty.Request {
-	return global.HTTPClient.R().SetContext(ctx)
+	token, err := SignAuthenticationToken(global.BigOneSetting.APIKEY, global.BigOneSetting.APISECRET)
+	if err != nil {
+		log.Fatalf("auth failed: %v\n", err)
+	}
+
+	return global.HTTPClient.R().SetContext(ctx).SetAuthToken(token)
 }
 
 func decodeResponse(resp *resty.Response) ([]byte, error) {

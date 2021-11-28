@@ -198,6 +198,9 @@ func CancelOrder(id int64) (*Order, error) {
 		return nil, err
 	}
 
+	fmt.Printf("撤销订单, ID: %d, AssetPairName: %s, Side: %s, State: %s, Price: %s, Amount: %s\n",
+		order.ID, order.AssetPairName, order.Side, order.State, order.Price, order.Amount)
+
 	return order, nil
 }
 
@@ -308,4 +311,15 @@ func ShowOrdes() {
 		fmt.Printf("当前订单, ID: %d, AssetPairName: %s, Side: %s, State: %s, Price: %s, Amount: %s\n",
 			order.ID, order.AssetPairName, order.Side, order.State, order.Price, order.Amount)
 	}
+}
+
+func ShowOrde(id int64) {
+	order, err := ReadOrder(id)
+	if err != nil {
+		fmt.Printf("read order failed: %v\n", err)
+		return
+	}
+
+	fmt.Printf("当前订单, ID: %d, AssetPairName: %s, Side: %s, State: %s, Price: %s, Amount: %s\n",
+		order.ID, order.AssetPairName, order.Side, order.State, order.Price, order.Amount)
 }

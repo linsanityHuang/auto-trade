@@ -12,4 +12,6 @@ var (
 	Timeout = 1 * time.Second
 	// Email email setting
 	EmailSetting *setting.Email
+	RedisSetting *setting.Redis
+	TradeFee     = 0.002
 )

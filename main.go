@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -29,6 +30,8 @@ func init() {
 	}
 
 	setupHTTPClient()
+
+	setupRedisClient()
 }
 
 func main() {
@@ -46,6 +49,9 @@ func main() {
 	orderNum := tradeCmd.Int("orderNum", 0, "order number")
 
 	orderCmd := flag.NewFlagSet("order", flag.ExitOnError)
+	list := orderCmd.Bool("list", false, "pending order list")
+	detail := orderCmd.Int64("show", 0, "show order detail by id")
+	cancel := orderCmd.Int64("cancel", 0, "cancel order by id")
 
 	balanceCmd := flag.NewFlagSet("balance", flag.ExitOnError)
 	asset := balanceCmd.String("asset", "BTC", "asset symbol")
@@ -61,15 +67,25 @@ func main() {
 	switch os.Args[1] {
 	case "trade":
 		tradeCmd.Parse(os.Args[2:])
-		log.Printf("trade, price space: %.2f, order number: %d\n", *priceSpace, *orderNum)
+		log.Printf("trade, price space: %.5f, order number: %d\n", *priceSpace, *orderNum)
 		worker.StartTrade(float32(*priceSpace), *orderNum)
 	case "order":
 		orderCmd.Parse(os.Args[2:])
-		bigone.ShowOrdes()
+		if *list {
+			bigone.ShowOrdes()
+		}
+
+		if *detail > 0 {
+			bigone.ShowOrde(*detail)
+		}
+
+		if *cancel > 0 {
+			bigone.CancelOrder(*cancel)
+		}
 	case "balance":
 		balanceCmd.Parse(os.Args[2:])
 		r := bigone.SpotBalance(*asset)
-		fmt.Printf("spot balance %s: %.2f\n", *asset, r)
+		fmt.Printf("spot balance %s: %.5f\n", *asset, r)
 	case "price":
 		priceCmd.Parse(os.Args[2:])
 		bigone.ShowAssetPrice(*assetPair)
@@ -86,6 +102,11 @@ func setupSetting() error {
 		return err
 	}
 
+	err = setting.ReadSection("Redis", &global.RedisSetting)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -94,4 +115,17 @@ func setupHTTPClient() {
 		SetHeader("Content-Type", "application/json").
 		SetHostURL(global.BigOneSetting.BASEAPI).
 		SetTimeout(2 * time.Second)
+}
+
+func setupRedisClient() {
+	addr := fmt.Sprintf("%s:%d", global.RedisSetting.Host, global.RedisSetting.Port)
+	global.RedisClient = redis.NewClient(&redis.Options{
+		Addr:     addr,
+		DB:       global.RedisSetting.DB,
+		Password: "",
+	})
+
+	if err := global.RedisClient.Ping().Err(); err != nil {
+		log.Fatalf("redis setup failed: %v\n", err)
+	}
 }

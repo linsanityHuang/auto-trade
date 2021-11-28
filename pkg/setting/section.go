@@ -16,6 +16,13 @@ type Email struct {
 	Receiver     string
 }
 
+type Redis struct {
+	Host     string
+	Port     int
+	Password string
+	DB       int
+}
+
 // ReadSection read section
 func (s *Setting) ReadSection(k string, v interface{}) error {
 	err := s.vp.UnmarshalKey(k, v)
